@@ -11,6 +11,7 @@ nsf = 64 # number of sisrnet filters
 
 class SISRNet(nn.Module):
     def __init__(self, n_blocks=8):
+        super(SISRNet, self).__init__()
         self.n_blocks = 8
 
     def forward(self, input):
