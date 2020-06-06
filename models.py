@@ -2,17 +2,44 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+from torchsummary import summary
 
-hr_size = (384,384)
+hr_size = (96,96)
 nsf = 64 # number of sisrnet filters
 
 # [b,9,W,H,1] theirs (DeepSUM in TensorFlow)
 # [b,1,9,W,H] ours
 
 class SISRNet(nn.Module):
-    def __init__(self, n_blocks=8):
+    def __init__(self):
         super(SISRNet, self).__init__()
-        self.n_blocks = 8
+        self.block_1 = nn.Sequential(nn.Conv3d(1, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+
+        self.block_2 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+        self.block_3 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+        self.block_4 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+        self.block_5 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+        self.block_6 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+        self.block_7 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+        self.block_8 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"),
+                            nn.InstanceNorm3d(nsf), nn.LeakyReLU(0.01))
+
+        # self.block_1 = nn.Sequential(nn.Conv3d(1, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_2 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_3 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_4 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_5 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_6 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_7 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+        # self.block_8 = nn.Sequential(nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect"), nn.LeakyReLU(0.01))
+
 
     def forward(self, input):
 
@@ -21,12 +48,17 @@ class SISRNet(nn.Module):
 
         # use conv3d for these 2d convolutions with size 1 depth kernel so that
         # the 2d weights are shared across the 9 LR images
-        input = nn.Conv3d(1, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect")(input)
-        input = nn.InstanceNorm3d(input.shape[1])(input)
-        input = nn.LeakyReLu(0.01)(input)
-        for _ in range(self.n_blocks - 1):
-            input = nn.Conv3d(nsf, nsf, kernel_size=(1, 3, 3), padding=(0, 1, 1), padding_mode="reflect")(input)
-            input = nn.InstanceNorm3d(input.shape[1])(input)
-            input = nn.LeakyReLu(0.01)(input)
+
+        input = self.block_1(input)
+        input = self.block_2(input)
+        input = self.block_3(input)
+        input = self.block_4(input)
+        input = self.block_5(input)
+        input = self.block_6(input)
+        input = self.block_7(input)
+        input = self.block_8(input)
 
         return input
+
+model = SISRNet()
+print(model)
