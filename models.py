@@ -60,5 +60,11 @@ class SISRNet(nn.Module):
 
         return input
 
+import numpy as np
+# https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/7
+def num_params(model):
+    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+    return sum([np.prod(p.size()) for p in model_parameters])
+
 model = SISRNet()
-print(model)
+print(model, 'with', num_params(model), 'parameters')
