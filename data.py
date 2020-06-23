@@ -43,7 +43,7 @@ class TrainNIRDataset(torch.utils.data.Dataset):
 
         num_LR = len([name for name in os.listdir(imgs_path)]) // 2 - 1
         selected_LR = np.random.choice(num_LR, 9, replace=False)
-        
+
         #if upsample == true:
         #    LR_imgs[]
 
@@ -58,12 +58,12 @@ class TrainNIRDataset(torch.utils.data.Dataset):
         #size: torcheee tensor: (1, 384, 384)
         HR_img = torch.Tensor(np.array(Image.open(imgs_path + '/HR.png')))
 
-        if self.upsample: 
+        if self.upsample: # DONG
             thisFrame = random.randint(0, 288)
             LR_imgs = LR_imgs[:, :, thisFrame:thisFrame+96, thisFrame:thisFrame+96]
             HR_img = HR_img[thisFrame:thisFrame+96, thisFrame:thisFrame+96]
 
-        sample = {'LR': torch.clamp(LR_imgs, min=0, max=2**14-1), 'HR': HR_img}
+        sample = {'LR': torch.clamp(LR_imgs, min=0, max=2**14-1), 'HR': HR_img.view(1, 96, 96)}
         return sample
 
 class TestNIRDataset(torch.utils.data.Dataset):
@@ -127,12 +127,12 @@ class TrainREDDataset(torch.utils.data.Dataset):
         #size: torcheee tensor: (1, 384, 384)
         HR_img = torch.Tensor(np.array(Image.open(imgs_path + '/HR.png')))
 
-        if self.upsample: 
+        if self.upsample:
             thisFrame = random.randint(0, 288)
             LR_imgs = LR_imgs[:, :, thisFrame:thisFrame+96, thisFrame:thisFrame+96]
             HR_img = HR_img[thisFrame:thisFrame+96, thisFrame:thisFrame+96]
 
-        sample = {'LR': torch.clamp(LR_imgs, min=0, max=2**14-1).view(9, 96, 96), 'HR': HR_img}
+        sample = {'LR': torch.clamp(LR_imgs, min=0, max=2**14-1).view(9, 96, 96), 'HR': HR_img.view(1, 96, 96)}
         return sample
 
 

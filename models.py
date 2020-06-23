@@ -44,6 +44,10 @@ class SISRNet(nn.Module):
 
         # [b,64,9,W,H] output size
 
+        # ----- PRETRAINING -----
+        # start with [b, 1, 1, W, H] since we will only input 1 LR image
+        # turn into [b, 64, 1, W, H] for pretraining, then collapse to [b, 1, W, H] and take loss with HR
+
     def forward(self, input):
 
         # D stays the same throughout, so do H and W (padding=1 with "reflect", kernel=3)
@@ -63,51 +67,52 @@ class SISRNet(nn.Module):
 
         return input
 
-class SISRNet_pretrained(nn.Module):
-    def __init__(self):
-        super(SISRNet_pretrained, self).__init__()
-        self.sisrnet = SISRNet()
-        self.projection = nn.Sequential(...)
+# class SISRNet_projection(nn.Module):
+#     def __init__(self):
+#         super(SISRNet_pretrained, self).__init__()
+#         self.projection = nn.Sequential(nn.Conv2d(nsf, 1, kernel_size=3, stride=1, padding=1))
+#
+#
+#         # [b,64,1,W,H] output size
+#
+#     def forward(self, input):
+#
+#         # D stays the same throughout, so do H and W (padding=1 with "reflect", kernel=3)
+#         # for now im using InstanceNorm3d, not sure if its correct yet
+#
+#         # use conv3d for these 2d convolutions with size 1 depth kernel so that
+#         # the 2d weights are shared across the 9 LR images
+#         input = self.projection(input)
+#         return input
 
 
-        # [b,64,9,W,H] output size
 
-    def forward(self, input):
-
-        # D stays the same throughout, so do H and W (padding=1 with "reflect", kernel=3)
-        # for now im using InstanceNorm3d, not sure if its correct yet
-
-        # use conv3d for these 2d convolutions with size 1 depth kernel so that
-        # the 2d weights are shared across the 9 LR images
-        input = self.projection(self.sisrnet(input))
-        return input
-
-import numpy as np
-# https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/7
-def num_params(model):
-    model_parameters = filter(lambda p: p.requires_grad, model.parameters())
-    return sum([np.prod(p.size()) for p in model_parameters])
-
-model = SISRNet()
-# print(model, 'with', num_params(model), 'parameters')
-
-dataloader = torch.utils.data.DataLoader(TrainNIRDataset(), batch_size = 1)
-
-batch = next(iter(dataloader))
-img = batch["HR"].view(1, 1, 384, 384).float()
-# plt.imshow(img.view(384, 384), cmap='gray')
-print(img.shape)
+# import numpy as np
+# # https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/7
+# def num_params(model):
+#     model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+#     return sum([np.prod(p.size()) for p in model_parameters])
+#
+# model = SISRNet()
+# # print(model, 'with', num_params(model), 'parameters')
+#
+# dataloader = torch.utils.data.DataLoader(TrainNIRDataset(), batch_size = 1)
+#
+# batch = next(iter(dataloader))
+# img = batch["HR"].view(1, 1, 384, 384).float()
+# # plt.imshow(img.view(384, 384), cmap='gray')
+# print(img.shape)
+# # plt.show()
+#
+# # filter = torch.Tensor([[[[0, 0, 0],[0, 1, 0],[0, 0, 0]]]]).float()
+# filter = torch.zeros((1,1,11,11)).float()
+# filter[0, 0, 0, 0] = 1
+# print(filter.shape)
+# apply_kernel = lambda img: F.conv2d(img, filter, stride=1, padding=5)
+#
+# img2 = apply_kernel(img)
+# print(img2.shape)
+# fig, axes = plt.subplots(1, 2)
+# axes[0].imshow(img.view(384, 384), cmap='gray')
+# axes[1].imshow(img2.view(384, 384), cmap='gray')
 # plt.show()
-
-# filter = torch.Tensor([[[[0, 0, 0],[0, 1, 0],[0, 0, 0]]]]).float()
-filter = torch.zeros((1,1,11,11)).float()
-filter[0, 0, 0, 0] = 1
-print(filter.shape)
-apply_kernel = lambda img: F.conv2d(img, filter, stride=1, padding=5)
-
-img2 = apply_kernel(img)
-print(img2.shape)
-fig, axes = plt.subplots(1, 2)
-axes[0].imshow(img.view(384, 384), cmap='gray')
-axes[1].imshow(img2.view(384, 384), cmap='gray')
-plt.show()
