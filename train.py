@@ -112,7 +112,7 @@ class Model:
         batch = data_iter.next()
         # set a single batch aside so we can plot how the model transforms it over time on tensorboard
         lr_batch_STATIC, hr_batch_STATIC = batch['LR'].to(device).float(), batch['HR'].to(device).float()
-
+        lr_batch_singles_static = lr_batch_STATIC[:, :, 0:1, :, :]
 
         for epoch in tqdm(range(self.num_epochs)):
             print(' ----- Epoch {} ----- '.format(epoch))
@@ -144,9 +144,14 @@ class Model:
 
                 i += 1
                 num_iters += 1
-                if num_iters % 50 == 0 or epoch == self.num_epochs - 1:
-                    fig = plot_images(self.model, lr_batch_STATIC, hr_batch_STATIC, self.batch_size)
-                    writer.add_figure('Example Images', fig, global_step=num_iters)
+
+                with torch.no_grad():
+                    if num_iters % 50 == 0 or epoch == self.num_epochs - 1:
+                        pred_images = self.model(lr_batch_singles_static)
+                        new_images = projection(pred_images.view(-1, 64, W, H))
+
+                        fig = plot_images(new_images, hr_batch_STATIC, self.batch_size)
+                        writer.add_figure('Example Images', fig, global_step=num_iters)
 
             # checkpoint
             if epoch % 1 == 0 or epoch == self.num_epochs - 1:

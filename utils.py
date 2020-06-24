@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def plot_images(model, lr_batch, hr_batch, num_imgs_shown=4):
+def plot_images(predic_batch, hr_batch, num_imgs_shown=4):
     '''
     Input:
-    - model: super res model
-    - lr_batch: batch of low res images of size (-1, 1, 9, W, H)
+    - predic_batch: batch of low res images of size (-1, 1, W, H)
     - hr_batch: batch of high res images of size (-1, 1, W, H)
     - num_imgs_shown: number of images to plot in tensorboard
 
@@ -18,5 +17,21 @@ def plot_images(model, lr_batch, hr_batch, num_imgs_shown=4):
     '''
 
     # TODO:
+
+    fig, ax = plt.subplots(nrows=2, ncols=num_imgs_shown)
+
+    for i in range(0, num_imgs_shown):
+        img = predic_batch[i]
+        img2 = hr_batch[i]
+        ax[0, i].axis('off')
+        ax[0, i].imshow(img)
+        ax[1, i].axis('off')
+        ax[1, i].imshow(img2)
+    
+    plt.show()
+
+
+
+    
 
     return fig
